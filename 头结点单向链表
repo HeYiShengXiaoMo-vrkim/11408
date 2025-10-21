@@ -1,0 +1,281 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+// 链表节点结构
+typedef struct Node {
+    int data;
+    struct Node* next;
+} Node;
+
+// 链表结构
+typedef struct {
+    Node* head;
+} LinkedList;
+
+// 创建新节点
+Node* createNode(int val) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    if (newNode == NULL) {
+        printf("内存分配失败\n");
+        exit(1);
+    }
+    newNode->data = val;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// 初始化链表
+void initList(LinkedList* list) {
+    list->head = NULL;
+}
+
+// 增：在链表尾部添加节点
+void append(LinkedList* list, int val) {
+    Node* newNode = createNode(val);
+    
+    if (list->head == NULL) {
+        list->head = newNode;
+        return;
+    }
+    
+    Node* temp = list->head;
+    while (temp->next != NULL) {
+        temp = temp->next;
+    }
+    temp->next = newNode;
+}
+
+// 增：在链表头部添加节点
+void prepend(LinkedList* list, int val) {
+    Node* newNode = createNode(val);
+    newNode->next = list->head;
+    list->head = newNode;
+}
+
+// 增：在指定位置插入节点
+bool insert(LinkedList* list, int pos, int val) {
+    if (pos == 0) {
+        prepend(list, val);
+        return true;
+    }
+    
+    Node* newNode = createNode(val);
+    Node* temp = list->head;
+    
+    for (int i = 0; i < pos - 1 && temp != NULL; i++) {
+        temp = temp->next;
+    }
+    
+    if (temp == NULL) {
+        printf("位置超出链表范围\n");
+        free(newNode);
+        return false;
+    }
+    
+    newNode->next = temp->next;
+    temp->next = newNode;
+    return true;
+}
+
+// 删：删除指定值的第一个节点
+bool removeValue(LinkedList* list, int val) {
+    if (list->head == NULL) {
+        return false;
+    }
+    
+    // 如果要删除的是头节点
+    if (list->head->data == val) {
+        Node* temp = list->head;
+        list->head = list->head->next;
+        free(temp);
+        return true;
+    }
+    
+    Node* temp = list->head;
+    while (temp->next != NULL && temp->next->data != val) {
+        temp = temp->next;
+    }
+    
+    if (temp->next == NULL) {
+        return false;
+    }
+    
+    Node* toDelete = temp->next;
+    temp->next = temp->next->next;
+    free(toDelete);
+    return true;
+}
+
+// 删：删除指定位置的节点
+bool removeAt(LinkedList* list, int pos) {
+    if (list->head == NULL) {
+        return false;
+    }
+    
+    if (pos == 0) {
+        Node* temp = list->head;
+        list->head = list->head->next;
+        free(temp);
+        return true;
+    }
+    
+    Node* temp = list->head;
+    for (int i = 0; i < pos - 1 && temp != NULL; i++) {
+        temp = temp->next;
+    }
+    
+    if (temp == NULL || temp->next == NULL) {
+        return false;
+    }
+    
+    Node* toDelete = temp->next;
+    temp->next = temp->next->next;
+    free(toDelete);
+    return true;
+}
+
+// 改：修改指定位置的值
+bool update(LinkedList* list, int pos, int val) {
+    Node* temp = list->head;
+    for (int i = 0; i < pos && temp != NULL; i++) {
+        temp = temp->next;
+    }
+    
+    if (temp == NULL) {
+        return false;
+    }
+    
+    temp->data = val;
+    return true;
+}
+
+// 查：查找指定值的位置（返回第一个匹配的位置）
+int find(LinkedList* list, int val) {
+    Node* temp = list->head;
+    int pos = 0;
+    
+    while (temp != NULL) {
+        if (temp->data == val) {
+            return pos;
+        }
+        temp = temp->next;
+        pos++;
+    }
+    
+    return -1; // 未找到返回-1
+}
+
+// 查：获取指定位置的值
+bool get(LinkedList* list, int pos, int* val) {
+    Node* temp = list->head;
+    for (int i = 0; i < pos && temp != NULL; i++) {
+        temp = temp->next;
+    }
+    
+    if (temp == NULL) {
+        return false;
+    }
+    
+    *val = temp->data;
+    return true;
+}
+
+// 打印链表
+void display(LinkedList* list) {
+    if (list->head == NULL) {
+        printf("链表为空\n");
+        return;
+    }
+    
+    Node* temp = list->head;
+    while (temp != NULL) {
+        printf("%d", temp->data);
+        if (temp->next != NULL) {
+            printf(" -> ");
+        }
+        temp = temp->next;
+    }
+    printf("\n");
+}
+
+// 获取链表长度
+int size(LinkedList* list) {
+    int count = 0;
+    Node* temp = list->head;
+    while (temp != NULL) {
+        count++;
+        temp = temp->next;
+    }
+    return count;
+}
+
+// 清空链表
+void clear(LinkedList* list) {
+    Node* current = list->head;
+    Node* next;
+    
+    while (current != NULL) {
+        next = current->next;
+        free(current);
+        current = next;
+    }
+    
+    list->head = NULL;
+}
+
+// 判断链表是否为空
+bool isEmpty(LinkedList* list) {
+    return list->head == NULL;
+}
+
+// 测试函数
+int main() {
+    LinkedList list;
+    initList(&list);
+    
+    printf("=== 测试添加功能 ===\n");
+    append(&list, 10);
+    append(&list, 20);
+    append(&list, 30);
+    prepend(&list, 5);
+    printf("添加后的链表: ");
+    display(&list);
+    
+    printf("\n=== 测试插入功能 ===\n");
+    insert(&list, 2, 15);
+    printf("在位置2插入15后: ");
+    display(&list);
+    
+    printf("\n=== 测试查找功能 ===\n");
+    int pos = find(&list, 20);
+    printf("值20的位置: %d\n", pos);
+    
+    int val;
+    if (get(&list, 2, &val)) {
+        printf("位置2的值: %d\n", val);
+    }
+    
+    printf("\n=== 测试修改功能 ===\n");
+    update(&list, 2, 100);
+    printf("修改位置2为100后: ");
+    display(&list);
+    
+    printf("\n=== 测试删除功能 ===\n");
+    removeValue(&list, 100);
+    printf("删除值100后: ");
+    display(&list);
+    
+    removeAt(&list, 0);
+    printf("删除位置0后: ");
+    display(&list);
+    
+    printf("\n=== 其他信息 ===\n");
+    printf("链表长度: %d\n", size(&list));
+    printf("链表是否为空: %s\n", isEmpty(&list) ? "是" : "否");
+    
+    // 清理内存
+    clear(&list);
+    
+    return 0;
+}
